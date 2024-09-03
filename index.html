@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Recommendation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drug Recommendation</h1>
+        <input type="text" id="symptomInput" placeholder="Enter your symptom">
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <ul id="recommendationsList"></ul>
+        <p id="loadingMessage" style="display: none;">Fetching recommendations...</p>
+    </div>
+
+    <script>
+        function getRecommendations() {
+            var symptom = document.getElementById('symptomInput').value;
+            document.getElementById('loadingMessage').style.display = 'block'; // Display loading message
+            fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({symptom: symptom})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server Down'); // Throw error if response is not OK
+                }
+                return response.json(); // Parse response JSON
+            })
+            .then(data => {
+                document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
+                if (data.error) {
+                    throw new Error(data.error); // Throw error if error message is received from server
+                }
+                displayRecommendations(data.recommendations); // Display recommendations if no error
+            })
+            .catch(error => {
+                document.getElementById('loadingMessage').style.display = 'none'; // Hide loading message
+                displayError(error.message); // Display error message
+            });
+        }
+
+        function displayRecommendations(recommendations) {
+            var list = document.getElementById('recommendationsList');
+            list.innerHTML = '';
+            recommendations.forEach(drug => {
+                var listItem = document.createElement('li');
+                listItem.textContent = drug;
+                list.appendChild(listItem);
+            });
+        }
+
+        function displayError(message) {
+            var list = document.getElementById('recommendationsList');
+            list.innerHTML = '';
+            var errorItem = document.createElement('li');
+            errorItem.textContent = message;
+            list.appendChild(errorItem);
+        }
+    </script>
+</body>
+</html>
