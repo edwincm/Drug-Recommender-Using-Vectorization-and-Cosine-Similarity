@@ -23,7 +23,7 @@ class DummyFlask:
 def load_app_with_stubbed_dependencies():
     flask_module = types.ModuleType("flask")
     flask_module.Flask = DummyFlask
-    flask_module.request = types.SimpleNamespace(get_json=lambda: {})
+    flask_module.request = types.SimpleNamespace(get_json=lambda **kwargs: {})
     flask_module.jsonify = lambda value: value
 
     flask_cors_module = types.ModuleType("flask_cors")
@@ -83,3 +83,13 @@ def test_recommendations_return_message_when_condition_has_no_match():
     )
 
     assert app.recommend_drugs("insomnia") == ["Sorry, no drugs found for the given symptom."]
+
+
+def test_predict_rejects_missing_symptom():
+    app = load_app_with_stubbed_dependencies()
+    app.request.get_json = lambda **kwargs: {}
+
+    response, status_code = app.predict()
+
+    assert status_code == 400
+    assert response == {"error": "symptom is required"}
