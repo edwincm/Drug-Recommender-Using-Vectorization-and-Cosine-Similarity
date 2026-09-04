@@ -22,7 +22,7 @@ df = pd.DataFrame(X, columns=['drugName', 'condition', 'review'])
 df['review'] = df['review'].str.lower()
 
 # Handle missing values in drugName
-df['drugName'].fillna(df['drugName'].mode()[0], inplace=True)
+df['drugName'] = df['drugName'].fillna(df['drugName'].mode()[0])
 
 # Function to recommend drugs for a given symptom
 def recommend_drugs(symptom):
