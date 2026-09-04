@@ -68,8 +68,12 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json()
-    symptom = data['symptom']
+    data = request.get_json(silent=True) or {}
+    symptom = str(data.get('symptom', '')).strip()
+
+    if not symptom:
+        return jsonify({'error': 'symptom is required'}), 400
+
     recommendations = recommend_drugs(symptom)
     return jsonify({'recommendations': recommendations})
 
